@@ -1,1 +1,306 @@
+       
+from django.db import models
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
+from django.core.validators import RegexValidator
+class NewUser(AbstractBaseUser, PermissionsMixin):
+email = models.EmailField(unique=True)
+username models.CharField(max_length-150, unique=True) =
+phone_regex RegexValidator (regex=r'^\+?1?\d(9,15)$', message="Please enter a valid phone number") = phone_number= models.CharField(validators-[phone_regex], max_length-17, blank=True)
+is staff models.BooleanField(default-False)
+is_active models.BooleanField(default-False) =objects NewUserAccountManager()
+USERNAME FIELD = 'email'
+REQUIRED FIELDS ['username', 'phone_number"]
+def str_(self):
+return self.email
+class NewUserAccountManager(BaseUserManager):
+def create_superuser(self, username, email, phone_number, password, **other_fields): other fields.setdefault('is_staff', True) other_fields.setdefault('is_superuser', True) other fields.setdefault('is_active', True)
+if other fields.get('is_staff') is not True: raise ValueError('Superuser must be assigned to is_staff=True')
+if other fields.get('is_superuser') is not True: raise ValueError('Superuser must be assigned to is superuser=True')
+ user = self.create_user(username, email, phone number, password, other _fields) user.set_password(password)
+user.save()
+return user
+def create_user(self, username, email, phone_number, password, "*other_fields): if not email:
+raise ValueError("Email address is required!')
+email = self.normalize_email(email
+if password is not None:
+else:
 
+user=self.model (username=username, email-email, phone_number=phone_number, password-password,**user.set_unusable_password()
+
+
+
+
+from django import forms
+from django.contrib.auth import get_user_model
+User = get_user_model()
+class RegisterForm(forms.Form):
+username =forms.CharField(label="Username")
+email = forms. EmailField(label="Email")
+phone_number forms.CharField(label="Enter your phone number here")
+user= self.model (username=username, email-email, phone_number=phone_number, password-password, ** user.save()
+user.save()
+return user
+
+class RegisterForm(forms.Form):
+username - forms.CharField(label="Username") email - forms.EmailField(label="Email") phone_number forms.CharField(label="Enter your phone number here")
+
+def clean_username(self):
+username" self.cleaned_data.get('username') user_details User.objects.filter(username=username)
+
+if user_details.exists():
+
+raise forms.ValidationError("Username is already taken")
+
+return username
+def clean_email(self):
+email- self.cleaned_data.get('email')
+If user_details.exists():
+user_details User.objects.filter(email-email) raise forms.ValidationError("There is already an account with this email, please try logging in!") return email
+
+def clean_phone_number(self):
+phone_number = self.cleaned_data.get('phone_number')
+user_details User.objects.filter(phone_number-phone_number)
+if user_details.exists():
+raise forms.ValidationError("An account with this phone number already exists! Please try registering
+
+return phone_number
+]
+class LoginForm(forms.Form):
+email forms. EmailField(label-"Email")
+def clean_email(self):
+email self.cleaned_data.get('email') user_details User.objects.filter(email-email) = if not user_details.exists(): raise forms.ValidationError("No account exists with this email. Try registering") return email
+
+
+
+
+from django.shortcuts import render, redirect from django.contrib.auth import authenticate, login, get_user_model
+from forms import RegisterForm
+User- get_user_model()
+def register_page(request):
+form RegisterForm(request.POST or None) context = ["form": form]
+}
+
+if form.is_valid(:
+username form.cleaned_data.get("username") email form.cleaned_data.get("email") new_user User.objects.create_user(username, email, phone_number, password=None)
+`phone_number form.cleaned_data.get("phone_number")
+return redirect("/login”)
+return render (request, "auth/register.html", context)
+
+<html>
+<head>
+<style type="text/css">
+body, p, div {
+font-family: Helvetica, Arial, sans-serif;
+font-size: 14px;
+CHAN
+VAJG
+}
+a {
+text-decoration: none;
+</style>
+<title></title>
+</head>
+<body>
+<center>
+<p>
+The verification code is: <strong> {{twilio_code}} </strong>
+</p>
+<p>
+<span style="font-size: 10px;"><a href=".">Email preferences</a></span>
+</center>
+</body> </html>
+
+
+
+
+SECRET_KEY = "add secret key here" EMAIL_HOST = "smtp.sendgrid.net"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = "apikey"
+EMAIL_HOST_PASSWORD= "add sendgrid api key here"
+DEFAULT_FROM_EMAIL "add from email address here"
+LOGIN_REDIRECT_URL = "/home"
+ACCOUNT_SID = 'add account sid here'
+AUTH_TOKEN "add auth token here"
+SERVICE_ID I'add service id here'
+TEMPLATE_ID= 'add template id here'
+
+
+from pathlib import Path
+from dotenv import load_dotenv
+import os
+load_dotenv()
+##email details
+EMAIL_HOST = os.getenv('EMAIL_HOST')
+EMAIL_PORT = os.getenv('EMAIL_PORT')
+EMAIL_USE_TLS os.getenv('EMAIL_TLS')
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD os.getenv("EMAIL_HOST_PASSWORD") 
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')
+##other details
+LOGIN_REDIRECT_URL os.getenv('LOGIN_REDIRECT_URL') 
+ACCOUNT_SID = os.getenv('ACCOUNT_SID')
+AUTH_TOKEN- os.getenv('AUTH_TOKEN') SERVICE_ID = os.getenv('SERVICE_ID')
+TEMPLATE ID os.getenv('TEMPLATE_ID') 
+
+from django.contrib.auth.backends import ModelBackend from django.contrib.auth import get_user_model
+class PasswordlessAuthBackend (ModelBackend): """Log in to Django without providing a password.
+def authenticate(self, request, email): User get_user_model() try: 
+user User.objects.get(email-email) = except User.DoesNotExist:
+return user
+
+return None
+
+def get_user(self, user_id): User get_user_model() try:
+return User.objects.get(pk=user_id) except User.Does NotExist:
+return None
+
+from django.contrib.auth.backends import ModelBackend from django.contrib.auth import get_user_model
+class PasswordlessAuthBackend (ModelBackend): """Log in to Django without providing a password.
+
+def authenticate(self, request, email): User get_user_model() try: user User.objects.get(email-email) = except User.DoesNotExist:
+return user
+
+return None
+
+def get_user(self, user_id): User get_user_model() try:
+return User.objects.get(pk=user_id) except User.Does NotExist:
+
+return None
+
+
+
+from django.contrib.auth.backends import ModelBackend from django.contrib.auth import get_user_model
+class PasswordlessAuthBackend (ModelBackend): 
+"""Log in to Django without providing a password.”””
+
+def authenticate(self, request, email): User get_user_model() try:
+ user User.objects.get(email-email) = except User.DoesNotExist:
+return user
+return None
+
+def get_user(self, user_id): User get_user_model() try:
+return User.objects.get(pk=user_id) except User.Does NotExist:
+return None
+
+
+
+import uuid
+from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login, get_user_model
+from django.contrib import messages
+from .forms import RegisterForm, LoginForm▸
+from verify import SendOTP
+
+def login page(request):
+form - LoginForm(request.POST or None)
+
+context "form": form
+
+if form.is_valid():
+email - form.cleaned_data.get('email')
+
+try:
+new " User.objects.get(email-email)
+
+## if user exists
+##first: send otp to the user
+SendOTP.send_code(email)
+##second:redirect to the page to enter otp
+temp uuid.uuid4()
+return redirect("/otp/{}/{}".format(new.pk, temp))
+except Exception as e:
+messages.error(request, "No such user exists!")
+return render(request, "auth/login.html", context)
+
+def generate_otp(request, pk, uuid): return render(request, 'otp.html')
+
+
+
+import os
+from twilio.rest import Client
+from django.conf import settings
+# Find your Account SID and Auth Token at twilio.com/console # and set the environment variables. See http://twil.io/secure
+class CheckOTP:
+def check_otp(email, secret):
+account_sid = settings.ACCOUNT_SID
+auth_token settings.AUTH_TOKEN
+client Client(account_sid, auth_token) =verification check client.verify \ verification_check
+.services(settings.SERVICE_ID)\
+.verification_checks \
+.create(to email, code-secret)
+return verification_check.status
+
+
+
+
+def home page(request):
+return render(request, "home_page.html")
+
+from django.contrib import admin
+from django.urls import path
+from verification.views import register_page, home page, login page, generate_otp, check_otp
+urlpatterns = [
+path('admin/', admin.site.urls),
+path('register/', register_page, name="register"),
+path('check/, check_otp, name="check_otp"),
+path('login/', login page, name="login"),
+path("otp/<int:pk>/<uuid>/', generate_otp),
+path("home/', home_page)
+TEMPLATES = [
+{
+'DIRS': ['templates'],
+'BACKEND': 'django.template.backends.django.DjangoTemplates', "OPTIONS": {
+'APP_DIRS': True,
+'context_processors': [
+'django.template.context_processors.debug', 'django.template.context_processors.request', 'django.contrib.auth.context_processors.auth', 'django.contrib.messages.context_processors.messages',
+
+
+
+#html code
+<IDOCTYPE html>
+<html>
+<head>
+</head>
+<body style="background-color: cadetblue;">
+<br>
+<h1 style="text-align: center;"> Register yourself for an awesome shopping experience 1</h1>
+<form method="POST" style="text-align:center;"> {% csrf_token %} <div class="container" style="background-color: grey; height: 400px; width: 600px; text-align:center; borde
+</br>
+</br>
+</br>
+{{ form.as_p }}
+<button type="submit" style="text-align:center;">Submit</button> <p><b>Already have an account? </b><a href="{% url 'login' %}">Sign in</a>.</p>
+</div>
+</body>
+</html>
+
+
+!DOCTYPE html>
+<html>
+<head>
+</head>
+<body style="background-color:khaki;">
+(X if messages X)
+(X for message in messages X) (% if message.tags == "error" %)
+<div class="alert alert-danger">
+chi style="border: 5px red;"> ((message)) </h1>
+</div>
+{% else %)
+cdiv class="alert alert-{{ message.tags }}">
+<h1 style="border: 5px red;"> {{ message }} </h1>
+</div>
+(X endif %)
+(% endfor %) {% endif %)
+chi style="text-align:center;"> Welcome Back!!</h1>
+ch2 style="text-align: center;"> Login to continue</h2> <div class="container" style="background-color: grey; height: 400px; width:600px; text-align:center; borde
+</br>
+</br>
+<form method="POST" style="text-align:center;"> {% csrf_token %)
+((form.as_p))
+<button type="submit" class="btn btn-default" style="text-align:center; background-color:white;">Submit</but
+<p><b> Create an account? </b><a href="{% url 'register' *)">Register here</a>.</p>
+</div>
+</form>
+</body>
+</html>
